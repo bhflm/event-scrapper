@@ -6,6 +6,8 @@ tldr; description
 
 WIP
 
+* `docker build -t lifi .`
+
 # How to run 
 
 WIP 

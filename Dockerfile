@@ -13,27 +13,29 @@ CMD ["npm", "start"]
 
 FROM development as builder
 
-RUN npm run build
 
-FROM node:18-alpine as production
+# RUN npm run build @@TODO: Replace this after
 
-ARG APP_ENV=development
-ENV NODE_ENV=${APP_ENV}
+RUN npm run start
 
-WORKDIR /usr/src/app
+# FROM node:18-alpine as production
 
-COPY package*.json ./
-COPY .npmrc ./
+# ARG APP_ENV=development
+# ENV NODE_ENV=${APP_ENV}
 
-RUN npm install --global npm@latest
-RUN mkdir -p ./node_modules && chown -R node:node ./node_modules
+# WORKDIR /usr/src/app
 
-USER node:node
+# COPY package*.json ./
 
-RUN npm ci
+# RUN npm install --global npm@latest
+# RUN mkdir -p ./node_modules && chown -R node:node ./node_modules
 
-COPY --from=builder --chown=node:node /usr/src/app/dist ./dist
+# USER node:node
 
-EXPOSE 3001
+# RUN npm ci
 
-CMD ["node", "dist/main"]
+# COPY --from=builder --chown=node:node /usr/src/app/dist ./dist
+
+# EXPOSE 3001
+
+# CMD ["node", "dist/main"]
