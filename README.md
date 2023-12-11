@@ -16,6 +16,8 @@ WIP
 
 WIP 
 
+- Using ethers.js vs Moralis or another provider for event listening, pros/cons
+
 # Final thoughts 
 
 WIP
