@@ -1,6 +1,6 @@
 FROM node:18-alpine as development
 
-WORKDIR  /usr/src/app
+WORKDIR  /src/app
 
 COPY package*.json ./
 
@@ -11,4 +11,4 @@ COPY --chown=node:node . .
 
 FROM development as builder
 
-RUN npm run dev
+CMD [ "npm", "run", "start"] 

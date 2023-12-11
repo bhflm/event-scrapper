@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { loadFeeCollectorEvents, parseFeeCollectorEvents } from '../helpers/loadEvents';
+import { loadFeeCollectorEvents } from '../helpers/loadEvents';
 
 /**
  * 
@@ -18,9 +18,9 @@ import { loadFeeCollectorEvents, parseFeeCollectorEvents } from '../helpers/load
 export const fetchFeeCollectorEvents = async (req: Request, res: Response, next: NextFunction) => {
   console.log('fetchEvents controller!');
   console.log('REQ: ', req.body);
-
-  const fromBlock = 51009343;
-  const toBlock = 51011196;
+ 
+  const fromBlock = 51009343; // @@TODO: Add as param 
+  const toBlock = 51011196; // @@todo: add as param
 
   const feeCollectorEvents = await loadFeeCollectorEvents(fromBlock, toBlock);
 
