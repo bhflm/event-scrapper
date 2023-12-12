@@ -1,4 +1,3 @@
-import * as fsPromises from 'fs/promises';
 import * as path from 'path';
 import { ethers } from 'ethers';
 import { BlockTag } from '@ethersproject/abstract-provider'
@@ -15,15 +14,6 @@ interface ParsedFeeCollectedEvents {
   lifiFee: ethers.BigNumberish; // the share collected for lifi
 }
 
-/**
- * Loads a contract abi.json
- * @param abiFilePath
- */
-const getAbi = async (abiFilePath) => {
-  const data = await fsPromises.readFile(abiFilePath, 'utf-8');
-  return JSON.parse(data);
-};
-
 export const getLastBlockForFeeCollector = async () => {
   try {
     const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC);
@@ -37,25 +27,34 @@ export const getLastBlockForFeeCollector = async () => {
 
 /**
  * For a given block range all `FeesCollected` events are loaded from the Polygon FeeCollector
+ * Throws if exceeds maximum block range
+ * https://github.com/bnb-chain/bsc/issues/113 
+ * https://ethereum.stackexchange.com/questions/107590/contract-queryfilterfilter-giving-me-errors-in-ethers-js
+ * 
  * @param fromBlock
  * @param toBlock
  */
-export const loadFeeCollectorEvents = async (fromBlock: BlockTag, toBlock: BlockTag): Promise<ethers.Event[]> => {
+
+
+const MAX_BLOCK_RANGE = 5000; // for contract.queryFilter, throws whenever range is > 5000
+const SAFE_BLOCK_RANGE = 1024; // https://docs.blockpi.io/guides-for-web-3.0-users/how-to-use-blockpi/best-practices
+
+export const loadFeeCollectorEvents = async (feeCollectorContract: ethers.Contract, fromBlock: BlockTag, toBlock: BlockTag): Promise<ethers.Event[]> => {
   try {
-    const feeCollectorABI = await getAbi(FEECOLLECTOR_ABI_PATH);
-
-    const contractInterface = new ethers.utils.Interface(feeCollectorABI);
-  
-    const feeCollector = new ethers.Contract(
-      CONTRACT_ADDRESS,
-      contractInterface,
-      new ethers.providers.JsonRpcProvider(POLYGON_RPC)
-    );
 
 
-    const filter = feeCollector.filters.FeesCollected()
-    const events = await feeCollector.queryFilter(filter, fromBlock, toBlock);
+    const blockRange =  parseInt(toBlock.toString(), 10) - parseInt(fromBlock.toString(), 10) ;
 
+    console.log('block RANGE: ', blockRange);
+
+    if (blockRange >= SAFE_BLOCK_RANGE) {
+      throw Error(`Cannot exceed maximum block range: ${SAFE_BLOCK_RANGE}`);
+    }
+
+    const filter = feeCollectorContract.filters.FeesCollected();
+    console.log('Filter: ', filter);
+    const events = await feeCollectorContract.queryFilter(filter, fromBlock, toBlock);
+    console.log('Events: ', events);
     return events;
   } catch (err) {
     console.log('Error: ', err);

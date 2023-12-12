@@ -10,15 +10,19 @@ const run = async () => {
   try {
     await connectToDatabase();
 
-    let block = await getLastIndexedBlock();
+    // let block = await getLastIndexedBlock();
+
+    let block = null;
 
     console.log('LAST BLOCK INDEXED: ', block);
-    if (block.lastIndexedBlock == 0) {
+    // if (block.lastIndexedBlock == 0) {
       block = await saveLastIndexedBlock(DEFAULT_OLDEST_BLOCK);
-    }
+    // }
     console.log('Indexed last block as: ', block);
+    process.exit(1);
   } catch(err) {
     console.error('ERROR WHILE UPDATING LAST INDEXED BLOCK: ', err.message);
+    process.exit(0);
   }
   
 };
