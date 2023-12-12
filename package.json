@@ -5,9 +5,10 @@
   "author": "germi <germanbonin@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "npx ts-node src/app.ts",
+    "start": "nodemon src/app.ts",
     "dev": "nodemon src/app.ts",
-    "build": "rm -rf build/ && prettier --write source/ && tsc"
+    "build": "rm -rf build/ && prettier --write source/ && tsc",
+    "update-last-block": "npx ts-node src/scripts/updateLastIndexedBlock.ts"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

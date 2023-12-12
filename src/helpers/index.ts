@@ -15,21 +15,34 @@ interface ParsedFeeCollectedEvents {
   lifiFee: ethers.BigNumberish; // the share collected for lifi
 }
 
-async function getAbi(abiFilePath): Promise<any> {
+/**
+ * Loads a contract abi.json
+ * @param abiFilePath
+ */
+const getAbi = async (abiFilePath) => {
   const data = await fsPromises.readFile(abiFilePath, 'utf-8');
   return JSON.parse(data);
 };
 
+export const getLastBlockForFeeCollector = async () => {
+  try {
+    const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC);
+    const lastBlock = await provider.getBlockNumber();
+    
+    return lastBlock;
+  } catch (error) {
+    console.error('Error fetching last block from contract:', error.message);
+  }
+}
 
 /**
  * For a given block range all `FeesCollected` events are loaded from the Polygon FeeCollector
  * @param fromBlock
  * @param toBlock
  */
-export const loadFeeCollectorEvents = async (fromBlock: BlockTag, toBlock: BlockTag): Promise<any> => {
+export const loadFeeCollectorEvents = async (fromBlock: BlockTag, toBlock: BlockTag): Promise<ethers.Event[]> => {
   try {
     const feeCollectorABI = await getAbi(FEECOLLECTOR_ABI_PATH);
-    console.log(feeCollectorABI);
 
     const contractInterface = new ethers.utils.Interface(feeCollectorABI);
   
@@ -38,17 +51,17 @@ export const loadFeeCollectorEvents = async (fromBlock: BlockTag, toBlock: Block
       contractInterface,
       new ethers.providers.JsonRpcProvider(POLYGON_RPC)
     );
-      
+
+
     const filter = feeCollector.filters.FeesCollected()
     const events = await feeCollector.queryFilter(filter, fromBlock, toBlock);
 
-    return parseFeeCollectorEvents(feeCollector, events);
+    return events;
   } catch (err) {
     console.log('Error: ', err);
     throw new Error(err);
   }
 }
-
 
 /**
  * Takes a list of raw events and parses them into ParsedFeeCollectedEvents
@@ -65,23 +78,13 @@ export const parseFeeCollectorEvents = (
 
     const parsedEvent = feeCollectorContract.interface.parseLog({ topics, data })
 
-    console.log('Parsed Event: ', parsedEvent);
-
     const feesCollected: ParsedFeeCollectedEvents = {
       token: parsedEvent.args[0],
       integrator: parsedEvent.args[1],
       integratorFee: ethers.BigNumber.from(parsedEvent.args[2]),
       lifiFee: ethers.BigNumber.from(parsedEvent.args[3]),
     };
-
-    console.log('Parsed feesCollected: ', parsedEvent);
-
-    const integratorFeeString = feesCollected.integratorFee.toString();
     
-    console.log('integratorFeeString: ', integratorFeeString);
-
-    console.log('back to bigNumber', ethers.BigNumber.from(integratorFeeString));
-
     return feesCollected;
   })
 }

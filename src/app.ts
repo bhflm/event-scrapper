@@ -1,6 +1,5 @@
 import cors from 'cors';
-import express, { Express, Request, Response } from 'express';
-import mongoose from "mongoose";
+import express from 'express';
 import router from './routes';
 import { connectToDatabase } from './dbConnection';
 
@@ -11,13 +10,13 @@ app
   .use(express.json())
   .use(router)
 
-const APP_PORT = 8080;
+const APP_PORT = 3000;
 
 const start = async (): Promise<void> => {
   try {
     await connectToDatabase();
     app.listen(APP_PORT, () => {
-      console.log("Server started on port 3000");
+      console.log(`Server started on port ${APP_PORT}`);
     });
   } catch (error) {
     console.error(error);

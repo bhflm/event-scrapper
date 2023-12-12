@@ -1,5 +1,5 @@
-import { Router, Request, Response } from 'express';
-import eventsRouter from './events.routes';
+import { Router } from 'express';
+import eventsRouter from './feeCollector';
 
 const router = Router();
 

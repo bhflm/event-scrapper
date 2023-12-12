@@ -3,20 +3,20 @@ version: "3.9"
 name: lifi-indexer
 
 services:
-  app:
-    container_name: lifi-express
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    environment:
-      DATABASE_NAME: ${DB_NAME}
-      DATABASE_USER: ${DB_USER}
-      DATABASE_PASS: ${DB_PASS}
-      DATABASE_URI: ${DB_HOST}
-    ports:
-      - '3000:3000'
-    depends_on:
-      - mongo
+  # app:
+  #   container_name: lifi-express
+  #   build:
+  #     context: ./
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     DATABASE_NAME: ${DB_NAME}
+  #     DATABASE_USER: ${DB_USER}
+  #     DATABASE_PASS: ${DB_PASS}
+  #     DATABASE_URI: ${DB_HOST}
+  #   ports:
+  #     - '3000:3000'
+  #   depends_on:
+  #     - mongo
 
   mongo:
     image: mongo:6.0
