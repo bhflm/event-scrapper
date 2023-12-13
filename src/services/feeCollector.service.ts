@@ -1,11 +1,9 @@
 import { Event, EventModel } from '../models/events';
 import { LastIndexedBlock, LastIndexedBlockModel } from '../models/block';
 
-export const getLastIndexedBlock = async (): Promise<LastIndexedBlock> => {
+export const getLastIndexedBlock = async (chainId: number): Promise<LastIndexedBlock> => {
   try {
-    console.log('getLastIndexedBlock');
-    const result = await LastIndexedBlockModel.findOne({});
-    console.log('Result: ', result);
+    const result = await LastIndexedBlockModel.findOne({ chainId });
     return result;
   } catch (error) {
     console.error('Error fetching LastIndexedBlock:', error.message);
@@ -13,9 +11,9 @@ export const getLastIndexedBlock = async (): Promise<LastIndexedBlock> => {
   }
 };
 
-export const saveLastIndexedBlock = async (lastIndexedBlock: number): Promise<LastIndexedBlock> => {
+export const saveLastIndexedBlock = async (lastIndexedBlock: number, chainId: number): Promise<LastIndexedBlock> => {
   try {
-    const newBlock = await LastIndexedBlockModel.findOneAndUpdate({}, { lastIndexedBlock }, { upsert: true });
+    const newBlock = await LastIndexedBlockModel.findOneAndUpdate({}, { lastIndexedBlock, chainId }, { upsert: true });
     return newBlock;
   } catch (error) {
     console.error('Error saving LastIndexedBlock:', error.message);
@@ -32,7 +30,7 @@ export const createManyEvents = async(events: Event[]): Promise<Event[]> => {
   }
 };
 
-export const getEventsByIntegrator = async (integrator: string): Promise<Event[]> => {
-  const events = await EventModel.find({ integrator }).exec();
+export const getEventsByIntegrator = async (integrator: string, chainId: number): Promise<Event[]> => {
+  const events = await EventModel.find({ integrator, chainId }).exec();
   return events;
 }

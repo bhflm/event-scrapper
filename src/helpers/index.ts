@@ -60,10 +60,9 @@ export const loadFeeCollectorEvents = async (feeCollectorContract: ethers.Contra
 export const parseFeeCollectorEvents = (
   feeCollectorContract: ethers.Contract,
   events: (ethers.Event)[],
-): any[] => {
+): ParsedFeeCollectedEvents[] => {
 
   return events.map(event => {
-    console.log(event);
     const { topics, data } = event; 
 
     const parsedEvent = feeCollectorContract.interface.parseLog({ topics, data })
@@ -71,9 +70,25 @@ export const parseFeeCollectorEvents = (
     const feesCollected: ParsedFeeCollectedEvents = {
       token: parsedEvent.args[0],
       integrator: parsedEvent.args[1],
-      integratorFee: ethers.BigNumber.from(parsedEvent.args[2]).toString(),
-      lifiFee: ethers.BigNumber.from(parsedEvent.args[3]).toString(),
+      integratorFee: ethers.BigNumber.from(parsedEvent.args[2]),
+      lifiFee: ethers.BigNumber.from(parsedEvent.args[3]),
     };
     return feesCollected;
   })
 }
+
+export const parseToEventsModel = (
+  events: ParsedFeeCollectedEvents[],
+  chainId: number
+) => {
+  return events.map(event => {
+    const { token, integrator, integratorFee, lifiFee } = event;
+    return {
+      token,
+      integrator,
+      chainId,
+      integratorFee: integratorFee.toString(),
+      lifiFee: lifiFee.toString()
+    };
+  });
+};

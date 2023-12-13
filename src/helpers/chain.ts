@@ -10,7 +10,6 @@ export const getRpcProvider = (chainId: number) => {
 };
 
 export const getChainIdByName = (chainName: string) => {
-
   if(!ChainIds[chainName]){
     throw new Error(`Chain ${chainName} does not exist or is not supported yet.`);
   };

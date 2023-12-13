@@ -8,6 +8,7 @@
     "start": "nodemon src/app.ts",
     "dev": "nodemon src/app.ts",
     "build": "rm -rf build/ && prettier --write source/ && tsc",
+    "test": "vitest",
     "update-last-block": "npx ts-node src/scripts/updateLastIndexedBlock.ts"
   },
   "devDependencies": {

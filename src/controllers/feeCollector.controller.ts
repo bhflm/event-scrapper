@@ -1,27 +1,31 @@
 import { Request, Response, NextFunction } from 'express';
-import { parseFeeCollectorEvents, loadFeeCollectorEvents, getLastBlockForFeeCollector } from '../helpers';
+import { parseFeeCollectorEvents, loadFeeCollectorEvents, getLastBlockForFeeCollector, parseToEventsModel } from '../helpers';
 import * as feeCollectorService from '../services/feeCollector.service';
 import { feeCollectorContract } from '../contracts/feeCollector';
 import { getChainIdByName } from 'src/helpers/chain';
 
 const BLOCKS_RANGE_THRESHOLD = 5000;
 
-
-export const fetchAndSaveLastEvents = async (req: Request, res: Response, next: NextFunction) => {
-  // @@ TODO: Refactor for chainId support
+export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
   try {
-    const { body: { scanBlock, chainSymbol } } = req;
+    const { body: { scanBlock, chain } } = req;
     
-    console.log('chainSymbol: ', chainSymbol);
+    console.log('RES: ', res);
 
-    const chainId = getChainIdByName(chainSymbol);
+    console.log('chainSymbol: ', chain);
+
+    const chainId = getChainIdByName(chain);
 
     console.log('Chain: ', chainId);
 
-    const feeCollector = await feeCollectorContract({ chainId });
+    const feeCollector = await feeCollectorContract(chainId);
+
+    console.log('feeCollector: ', feeCollector);
 
     const toBlock = scanBlock; // const toBlock = to ? to : await getLastBlockForFeeCollector();
-    const fromBlock = await feeCollectorService.getLastIndexedBlock(); // + 1;
+    const fromBlock = await feeCollectorService.getLastIndexedBlock(chainId); // + 1;
+
+    console.log('fromBlock: ', fromBlock);
 
     if (toBlock <= fromBlock.lastIndexedBlock) {
       console.log('Invalid block range', fromBlock);
@@ -37,29 +41,36 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response, next: 
     
     if (rawEvents.length > 0) {
       // store on database internally
-      const events = parseFeeCollectorEvents(feeCollector, rawEvents);
+      const feeCollectorEvents = parseFeeCollectorEvents(feeCollector, rawEvents);
+      const events = parseToEventsModel(feeCollectorEvents, chainId);
       
-      const added = await feeCollectorService.createManyEvents(events);
+      await feeCollectorService.createManyEvents(events);
     };
   
-    await feeCollectorService.saveLastIndexedBlock(toBlock);
+    await feeCollectorService.saveLastIndexedBlock(toBlock, chainId);
 
     return res.send({ scanned: rawEvents.length });
   } catch(err) {
-    const { message } = err;
-    res.status(400).send({ message })
+    console.error('fetchAndSaveLastEvents Error: ', err);
+    res.status(400).send({ err })
   }
 };
 
 
 export const getEventsByIntegrator = async (req: Request, res: Response, next: NextFunction) => {
-  const { params: { address} } = req;
+  const { params: { address, chain } } = req;
+
+  const chainId = getChainIdByName(chain);
+
+  if (!chainId) {
+    res.status(400).send({ message: `Chain ${chain} is not supported or does not exist`}); // FIX: status code
+  };
 
   if (!address) {
     res.status(400).send({ message: 'Need to supply a integrator address '}); // FIX: status code
   }
 
-  const rawEventsByIntegrator = await feeCollectorService.getEventsByIntegrator(address);
+  const rawEventsByIntegrator = await feeCollectorService.getEventsByIntegrator(address, chainId);
 
   const events = rawEventsByIntegrator.map(({ integrator, integratorFee, token, lifiFee }) => ({ integrator, token, integratorFee, lifiFee }));
 

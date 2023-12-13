@@ -17,9 +17,9 @@ const getAbi = async (abiFilePath) => {
   return JSON.parse(data);
 };
 
-export const feeCollectorContract = async ({ chainId }) => {
+export const feeCollectorContract = async (chainId: number) => {
   try { 
-    const feeCollectorABI = await getAbi(FEECOLLECTOR_ABI_PATH);
+    const feeCollectorABI = await getAbi(FEECOLLECTOR_ABI_PATH); // @@ todo: Refactor this as string
     const contractInterface = new ethers.utils.Interface(feeCollectorABI);
     const rpcUrl = getRpcProvider(chainId);
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
