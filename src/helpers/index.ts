@@ -1,11 +1,7 @@
-import * as path from 'path';
 import { ethers } from 'ethers';
 import { BlockTag } from '@ethersproject/abstract-provider'
 
-const dirPath = __dirname;
-const CONTRACT_ADDRESS = '0xbD6C7B0d2f68c2b7805d88388319cfB6EcB50eA9'
 const POLYGON_RPC = 'https://polygon-rpc.com'
-const FEECOLLECTOR_ABI_PATH = path.join(dirPath, '..', 'contracts', 'feeCollector.abi.json');
 
 interface ParsedFeeCollectedEvents {
   token: string; // the address of the token that was collected
@@ -41,20 +37,14 @@ const SAFE_BLOCK_RANGE = 1024; // https://docs.blockpi.io/guides-for-web-3.0-use
 
 export const loadFeeCollectorEvents = async (feeCollectorContract: ethers.Contract, fromBlock: BlockTag, toBlock: BlockTag): Promise<ethers.Event[]> => {
   try {
-
-
     const blockRange =  parseInt(toBlock.toString(), 10) - parseInt(fromBlock.toString(), 10) ;
-
-    console.log('block RANGE: ', blockRange);
 
     if (blockRange >= SAFE_BLOCK_RANGE) {
       throw Error(`Cannot exceed maximum block range: ${SAFE_BLOCK_RANGE}`);
     }
 
     const filter = feeCollectorContract.filters.FeesCollected();
-    console.log('Filter: ', filter);
     const events = await feeCollectorContract.queryFilter(filter, fromBlock, toBlock);
-    console.log('Events: ', events);
     return events;
   } catch (err) {
     console.log('Error: ', err);
@@ -80,10 +70,9 @@ export const parseFeeCollectorEvents = (
     const feesCollected: ParsedFeeCollectedEvents = {
       token: parsedEvent.args[0],
       integrator: parsedEvent.args[1],
-      integratorFee: ethers.BigNumber.from(parsedEvent.args[2]),
-      lifiFee: ethers.BigNumber.from(parsedEvent.args[3]),
+      integratorFee: ethers.BigNumber.from(parsedEvent.args[2]).toString(),
+      lifiFee: ethers.BigNumber.from(parsedEvent.args[3]).toString(),
     };
-    
     return feesCollected;
   })
 }

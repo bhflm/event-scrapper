@@ -22,9 +22,14 @@ export const saveLastIndexedBlock = async (lastIndexedBlock: number): Promise<La
   }
 };
 
-export const createEvent = async (data: { integrator: string; token: string; integratorFee: number; lifiFee: number }): Promise<Event> => {
-  const event = await EventModel.create(data);
-  return event;
+export const createManyEvents = async(events: Event[]): Promise<Event[]> => {
+  try {
+    const newEvents = await EventModel.insertMany(events)
+    return newEvents;
+  } catch(err) {
+    console.error('Error with createMany: ', err);
+    throw (err.message);
+  }
 };
 
 export const getEventsByIntegrator = async (integrator: string): Promise<Event[]> => {

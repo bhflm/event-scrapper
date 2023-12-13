@@ -3,7 +3,7 @@ import { parseFeeCollectorEvents, loadFeeCollectorEvents, getLastBlockForFeeColl
 import * as feeCollectorService from '../services/feeCollector.service';
 import { feeCollectorContract } from '../contracts/feeCollector';
 
-const BLOCKS_RANGE_THRESHOLD = 1024;
+const BLOCKS_RANGE_THRESHOLD = 5000;
 
 export const fetchAndSaveLastEvents = async (req: Request, res: Response, next: NextFunction) => {
   // @@ TODO: Refactor for chainId support
@@ -29,8 +29,8 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response, next: 
     if (rawEvents.length > 0) {
       // store on database internally
       const events = parseFeeCollectorEvents(feeCollector, rawEvents);
-      console.log('Events: ', events);
-      // @@ WIP: Store events internally.
+      
+      const added = await feeCollectorService.createManyEvents(events);
     };
   
     await feeCollectorService.saveLastIndexedBlock(toBlock);
@@ -42,3 +42,17 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response, next: 
   }
 };
 
+
+export const getEventsByIntegrator = async (req: Request, res: Response, next: NextFunction) => {
+  const { params: { address} } = req;
+
+  if (!address) {
+    res.status(400).send({ message: 'Need to supply a integrator address '}); // FIX: status code
+  }
+
+  const rawEventsByIntegrator = await feeCollectorService.getEventsByIntegrator(address);
+
+  const events = rawEventsByIntegrator.map(({ integrator, integratorFee, token, lifiFee }) => ({ integrator, token, integratorFee, lifiFee }));
+
+  res.send({ events, amount: events.length });
+};

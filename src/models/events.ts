@@ -8,10 +8,10 @@ export class Event {
   public token!: string;
 
   @prop({ required: true })
-  public integratorFee!: number;
+  public integratorFee!: string;
 
   @prop({ required: true})
-  public lifiFee!: number;
+  public lifiFee!: string; // bigNumber <> String 
 }
 
 export const EventModel = getModelForClass(Event);
