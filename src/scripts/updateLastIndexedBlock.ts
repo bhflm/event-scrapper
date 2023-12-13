@@ -1,43 +1,34 @@
 import { connectToDatabase } from "../dbConnection";
-import { ChainIds } from "../types/chains";
-import { getLastIndexedBlock, saveLastIndexedBlock } from "../services/feeCollector.service";
+import { getChainIdByName } from "../helpers/chain";
+import { saveLastIndexedBlock } from "../services/feeCollector.service";
 
 const DEFAULT_OLDEST_BLOCK = 47961368;
 
-// @@ DEBUG script
+// DEBUG script
 // !! WARN: Will upsert the db with last indexed block as the default value. 
 // This should be run on startup if last indexed block is 0.
 
-// Usage: npm run update-last-block {chainId}
+// Usage: npm run update-last-block {chainName} {blockNumber}?
 const run = async () => {
   try {
     await connectToDatabase();
-
-    console.log('Process.args', process.argv)
-    // let block = await getLastIndexedBlock();
     let block = null;
 
-    const argChainId = process.argv[2];
+    const argvChain = process.argv[2];
+    let blockNumber = parseInt(process.argv[3], 10);
 
-    console.log('ARGV: ', argChainId);
-
-
-    const chainId = ChainIds[argChainId as keyof typeof ChainIds]
-
-
-    console.log('CHAIN ID: ', chainId);
-
-    if (!chainId) {
-      throw Error('Invalid chain id');
+    if(!blockNumber) {
+      blockNumber = DEFAULT_OLDEST_BLOCK;
     }
 
-    // if (block.lastIndexedBlock == 0) {
-      block = await saveLastIndexedBlock(DEFAULT_OLDEST_BLOCK, chainId);
-    // }
-    console.log('Indexed last block as: ', block);
+    const chainId = getChainIdByName(argvChain);
+
+    block = await saveLastIndexedBlock(DEFAULT_OLDEST_BLOCK, chainId);
+  
+    console.log(`Updated last indexed block: ${blockNumber} for chain ${argvChain} (${chainId})`)
     process.exit(1);
   } catch(err) {
-    console.error('ERROR WHILE UPDATING LAST INDEXED BLOCK: ', err.message);
+    console.error('Error updating last indexed block: ', err.message);
     process.exit(0);
   }
   

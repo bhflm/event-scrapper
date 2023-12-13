@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import { BlockTag } from '@ethersproject/abstract-provider'
 import { getRpcProvider } from './chain';
-import { ChainIds } from '../types/chains';
 
 interface ParsedFeeCollectedEvents {
   token: string; // the address of the token that was collected
@@ -10,7 +9,7 @@ interface ParsedFeeCollectedEvents {
   lifiFee: ethers.BigNumberish; // the share collected for lifi
 }
 
-export const getLastBlockForFeeCollector = async (chainId: ChainIds) => {
+export const getLastBlockForFeeCollector = async (chainId: number) => {
   try {
     const rpcUrl = getRpcProvider(chainId); 
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
@@ -77,7 +76,7 @@ export const parseFeeCollectorEvents = (
 
 export const parseToEventsModel = (
   events: ParsedFeeCollectedEvents[],
-  chainId: ChainIds
+  chainId: number
 ) => {
   return events.map(event => {
     const { token, integrator, integratorFee, lifiFee } = event;

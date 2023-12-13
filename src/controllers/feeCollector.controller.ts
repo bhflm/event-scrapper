@@ -8,13 +8,30 @@ const BLOCKS_RANGE_THRESHOLD = 5000;
 
 export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
   try {
-    const { body: { scanBlock, chainId } } = req;
-  
+    const { body: { scanBlock, chain } } = req;
+
+    if (!chain) {
+      const errorMessage = 'Need to suply a chain name';
+      console.error(errorMessage);
+      res.status(400).send({ errorMessage });
+    }
+
+
+    const chainId = getChainIdByName(chain);
+
     const feeCollector = await feeCollectorContract(chainId);
 
-    console.log('feeCollector: ', feeCollector);
+    let toBlock; // const toBlock = to ? to : await getLastBlockForFeeCollector();
+    
 
-    const toBlock = scanBlock; // const toBlock = to ? to : await getLastBlockForFeeCollector();
+    if (!scanBlock) {
+      toBlock = await getLastBlockForFeeCollector(chainId);
+      console.log('Fetched last block for chainId: ', chainId, toBlock);
+    } else {
+      toBlock = scanBlock;
+      console.log('Default block param; ', scanBlock);
+    }
+
     const fromBlock = await feeCollectorService.getLastIndexedBlock(chainId); // + 1;
 
     console.log('fromBlock: ', fromBlock);

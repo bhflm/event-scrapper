@@ -7,16 +7,21 @@ export const getLastIndexedBlock = async (chainId: number): Promise<LastIndexedB
     return result;
   } catch (error) {
     console.error('Error fetching LastIndexedBlock:', error.message);
-    return;
+    throw error;
   }
 };
 
 export const saveLastIndexedBlock = async (lastIndexedBlock: number, chainId: number): Promise<LastIndexedBlock> => {
   try {
-    const newBlock = await LastIndexedBlockModel.findOneAndUpdate({}, { lastIndexedBlock, chainId }, { upsert: true });
-    return newBlock;
+    const savedBlock = await LastIndexedBlockModel.findOneAndUpdate(
+      { chainId },
+      { lastIndexedBlock, chainId },
+      { upsert: true, new: true }
+    );
+    return savedBlock;
   } catch (error) {
     console.error('Error saving LastIndexedBlock:', error.message);
+    throw error;
   }
 };
 
@@ -24,13 +29,19 @@ export const createManyEvents = async(events: Event[]): Promise<Event[]> => {
   try {
     const newEvents = await EventModel.insertMany(events)
     return newEvents;
-  } catch(err) {
-    console.error('Error with createMany: ', err);
-    throw (err.message);
+  } catch(error) {
+    console.error('Error with createMany: ', error);
+    throw error;
   }
 };
 
 export const getEventsByIntegrator = async (integrator: string, chainId: number): Promise<Event[]> => {
-  const events = await EventModel.find({ integrator, chainId }).exec();
-  return events;
+  try {
+    const events = await EventModel.find({ integrator, chainId }).exec();
+    return events;
+  } catch(error) {
+    console.error('Error by getEventsByIntegrator: ', error);
+    throw error;
+  }
+ 
 }

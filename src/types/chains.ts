@@ -1,5 +1,5 @@
 // improve: this could be just a table
-export const ChainIds = {
+export const ChainIds: Record<string, number> = {
   ETH: 0,
   POL: 1,
   FTM: 2,
