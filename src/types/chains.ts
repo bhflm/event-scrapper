@@ -1,8 +1,9 @@
-export enum ChainIds {
-  ETH,
-  POL,
-  FTM,
-  BSC
+// improve: this could be just a table
+export const ChainIds = {
+  ETH: 0,
+  POL: 1,
+  FTM: 2,
+  BSC: 3,
 };
 
 const ETH_RPC = 'https://[REPLACE_ME].com';

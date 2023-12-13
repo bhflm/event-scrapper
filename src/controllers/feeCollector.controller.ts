@@ -2,22 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { parseFeeCollectorEvents, loadFeeCollectorEvents, getLastBlockForFeeCollector, parseToEventsModel } from '../helpers';
 import * as feeCollectorService from '../services/feeCollector.service';
 import { feeCollectorContract } from '../contracts/feeCollector';
-import { getChainIdByName } from 'src/helpers/chain';
+import { getChainIdByName } from '../helpers/chain';
 
 const BLOCKS_RANGE_THRESHOLD = 5000;
 
 export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
   try {
-    const { body: { scanBlock, chain } } = req;
-    
-    console.log('RES: ', res);
-
-    console.log('chainSymbol: ', chain);
-
-    const chainId = getChainIdByName(chain);
-
-    console.log('Chain: ', chainId);
-
+    const { body: { scanBlock, chainId } } = req;
+  
     const feeCollector = await feeCollectorContract(chainId);
 
     console.log('feeCollector: ', feeCollector);
@@ -63,7 +55,7 @@ export const getEventsByIntegrator = async (req: Request, res: Response, next: N
   const chainId = getChainIdByName(chain);
 
   if (!chainId) {
-    res.status(400).send({ message: `Chain ${chain} is not supported or does not exist`}); // FIX: status code
+    res.status(400).send({ message: `chainId ${chain} is not valid`}); // FIX: status code
   };
 
   if (!address) {

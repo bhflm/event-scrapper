@@ -1,7 +1,7 @@
 import * as fsPromises from 'fs/promises';
 import * as path from 'path';
 import { ethers } from 'ethers';
-import { getRpcProvider } from 'src/helpers/chain';
+import { getRpcProvider } from '../helpers/chain';
 const dirPath = __dirname;
 
 const FEECOLLECTOR_ABI_PATH = path.join(dirPath, '..', 'contracts', 'feeCollector.abi.json'); // @todo: save this a string ??? sdk does it
@@ -22,6 +22,7 @@ export const feeCollectorContract = async (chainId: number) => {
     const feeCollectorABI = await getAbi(FEECOLLECTOR_ABI_PATH); // @@ todo: Refactor this as string
     const contractInterface = new ethers.utils.Interface(feeCollectorABI);
     const rpcUrl = getRpcProvider(chainId);
+    console.log('RPC URL :', rpcUrl);
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
   
     const feeCollector = new ethers.Contract(
