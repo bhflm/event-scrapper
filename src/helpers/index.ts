@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { BlockTag } from '@ethersproject/abstract-provider'
-
-const POLYGON_RPC = 'https://polygon-rpc.com'
+import { getRpcProvider } from './chain';
+import { ChainId } from '../types';
 
 interface ParsedFeeCollectedEvents {
   token: string; // the address of the token that was collected
@@ -10,9 +10,12 @@ interface ParsedFeeCollectedEvents {
   lifiFee: ethers.BigNumberish; // the share collected for lifi
 }
 
-export const getLastBlockForFeeCollector = async () => {
+// const contract = setupContract(contracts.feeCollector, provider);
+
+export const getLastBlockForFeeCollector = async (chainId: number) => {
   try {
-    const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC);
+    const rpcUrl = getRpcProvider(chainId); 
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const lastBlock = await provider.getBlockNumber();
     
     return lastBlock;
@@ -31,8 +34,6 @@ export const getLastBlockForFeeCollector = async () => {
  * @param toBlock
  */
 
-
-const MAX_BLOCK_RANGE = 5000; // for contract.queryFilter, throws whenever range is > 5000
 const SAFE_BLOCK_RANGE = 1024; // https://docs.blockpi.io/guides-for-web-3.0-users/how-to-use-blockpi/best-practices
 
 export const loadFeeCollectorEvents = async (feeCollectorContract: ethers.Contract, fromBlock: BlockTag, toBlock: BlockTag): Promise<ethers.Event[]> => {

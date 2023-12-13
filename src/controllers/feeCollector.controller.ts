@@ -2,15 +2,24 @@ import { Request, Response, NextFunction } from 'express';
 import { parseFeeCollectorEvents, loadFeeCollectorEvents, getLastBlockForFeeCollector } from '../helpers';
 import * as feeCollectorService from '../services/feeCollector.service';
 import { feeCollectorContract } from '../contracts/feeCollector';
+import { getChainIdByName } from 'src/helpers/chain';
 
 const BLOCKS_RANGE_THRESHOLD = 5000;
+
 
 export const fetchAndSaveLastEvents = async (req: Request, res: Response, next: NextFunction) => {
   // @@ TODO: Refactor for chainId support
   try {
-    const { body: { scanBlock, chainId } } = req;
+    const { body: { scanBlock, chainSymbol } } = req;
     
-    const feeCollector = await feeCollectorContract();
+    console.log('chainSymbol: ', chainSymbol);
+
+    const chainId = getChainIdByName(chainSymbol);
+
+    console.log('Chain: ', chainId);
+
+    const feeCollector = await feeCollectorContract({ chainId });
+
     const toBlock = scanBlock; // const toBlock = to ? to : await getLastBlockForFeeCollector();
     const fromBlock = await feeCollectorService.getLastIndexedBlock(); // + 1;
 

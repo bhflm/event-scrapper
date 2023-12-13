@@ -12,6 +12,9 @@ export class Event {
 
   @prop({ required: true})
   public lifiFee!: string; // bigNumber <> String 
+
+  @prop({ required: true })
+  public chainId: number;
 }
 
 export const EventModel = getModelForClass(Event);
