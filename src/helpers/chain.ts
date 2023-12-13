@@ -4,11 +4,7 @@ export const getRpcProvider = (chainId: number) => {
   if (!ChainRpcProviders[chainId]) {
     throw new Error(`Unable to configure provider for chain ${chainId}.`)
   }
-
-  const rpcUrl = ChainRpcProviders[chainId]
-  console.log('RPC URL: ', rpcUrl);
-
-  return rpcUrl;
+  return ChainRpcProviders[chainId];
 };
 
 export const getChainIdByName = (chain: string) => {

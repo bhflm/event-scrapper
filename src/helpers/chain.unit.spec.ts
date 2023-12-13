@@ -15,7 +15,6 @@ describe('getChainIdByName', () => {
     const POLChain = "POL";
     const POLChainId = 1;
     const chainId = getChainIdByName(POLChain);
-    console.log('CHAIN : ', chainId);
     expect(chainId).toBe(POLChainId);
   });
 })
@@ -32,7 +31,6 @@ describe('getRpcProvider', () => {
   });
   it('Should retrieve valid chain Id', () => {
     const rpcProvider = getRpcProvider(validChainId);
-    console.log('valid chain: ', rpcProvider)
     expect(rpcProvider).toBe(ChainRpcProviders[0])
   });
 })
