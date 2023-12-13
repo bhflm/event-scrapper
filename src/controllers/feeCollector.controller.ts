@@ -4,7 +4,7 @@ import * as feeCollectorService from '../services/feeCollector.service';
 import { feeCollectorContract } from '../contracts/feeCollector';
 import { getChainIdByName } from '../helpers/chain';
 
-const BLOCKS_RANGE_THRESHOLD = 5000;
+const BLOCKS_RANGE_THRESHOLD = 1024;
 
 export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
   try {
@@ -37,13 +37,15 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
     console.log('fromBlock: ', fromBlock);
 
     if (toBlock <= fromBlock.lastIndexedBlock) {
-      console.log('Invalid block range', fromBlock);
-      return res.status(400).send({ message: 'Invalid block range', lastIndexedBlock: fromBlock.lastIndexedBlock });
+      const minorBlockRangeErrorMessage = `Invalid block range: ${toBlock} Needs to be > than last indexed block`;
+      console.log(minorBlockRangeErrorMessage);
+      return res.status(400).send({ message: minorBlockRangeErrorMessage, lastIndexedBlock: fromBlock.lastIndexedBlock });
     }
 
     if ((toBlock - fromBlock.lastIndexedBlock) > BLOCKS_RANGE_THRESHOLD) {
-      console.log(`Invalid block range: exceeds threshold of ${BLOCKS_RANGE_THRESHOLD}`);
-      return res.status(400).send({ message: 'Invalid block range to scan' });
+      console.log('Alternate method for scraping blocks');
+      // @@ TODO: Scrape blocks with exponential backoff algorithm
+      return res.json({ message: 'NEED TO IMPLEMENT' });
     }
     
     const rawEvents = await loadFeeCollectorEvents(feeCollector, fromBlock.lastIndexedBlock + 1, toBlock);
@@ -68,20 +70,24 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
 
 export const getEventsByIntegrator = async (req: Request, res: Response, next: NextFunction) => {
   const { params: { address, chain } } = req;
+  try {
 
-  const chainId = getChainIdByName(chain);
+    console.log(address, chain);
+    
+    const chainId = getChainIdByName(chain);
 
-  if (!chainId) {
-    res.status(400).send({ message: `chainId ${chain} is not valid`}); // FIX: status code
+    if (!address) {
+      res.status(400).send({ message: 'Need to supply a integrator address '}); // FIX: status code
+    }
+  
+    const rawEventsByIntegrator = await feeCollectorService.getEventsByIntegrator(address, chainId);
+  
+    const events = rawEventsByIntegrator.map(({ integrator, integratorFee, token, lifiFee }) => ({ integrator, token, integratorFee, lifiFee }));
+  
+    res.send({ events, amount: events.length });
+  } catch(error) {
+    console.error('Error getEventsByIntegrator: ', error.message);
+    res.status(400).send({ message: error.message });
   };
-
-  if (!address) {
-    res.status(400).send({ message: 'Need to supply a integrator address '}); // FIX: status code
-  }
-
-  const rawEventsByIntegrator = await feeCollectorService.getEventsByIntegrator(address, chainId);
-
-  const events = rawEventsByIntegrator.map(({ integrator, integratorFee, token, lifiFee }) => ({ integrator, token, integratorFee, lifiFee }));
-
-  res.send({ events, amount: events.length });
+   
 };

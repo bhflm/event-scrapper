@@ -4,6 +4,6 @@ import * as feeCollectorController from '../controllers/feeCollector.controller'
 const feeCollectorRouter = Router();
 
 feeCollectorRouter.post('/events', feeCollectorController.fetchAndSaveLastEvents);
-feeCollectorRouter.get('/events/:address', feeCollectorController.getEventsByIntegrator)
+feeCollectorRouter.get('/events/:chain/:address', feeCollectorController.getEventsByIntegrator)
 
 export default feeCollectorRouter;
