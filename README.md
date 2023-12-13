@@ -2,6 +2,12 @@
 
 tldr; description
 
+- [] Tests (controllers, services )
+- [] Types (remove any)
+- [] Remove comments 
+- [] Better readme
+- [] CLI Capabilities ? 
+
 # Pre requisites
 
 - Docker 
