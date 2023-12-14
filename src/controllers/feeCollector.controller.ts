@@ -10,7 +10,7 @@ import {
 import * as feeCollectorService from '../services/feeCollector.service'
 import { FeeCollectorContract } from '../contracts/feeCollector'
 import { getChainIdByName } from '../helpers/chain'
-import { BLOCKS_RANGE_THRESHOLD } from '../helpers';
+import { BLOCKS_RANGE_THRESHOLD } from '../helpers'
 
 const fetchRawEventsWithMultipleProviders = async (
   feeCollector: FeeCollectorContract,

@@ -117,7 +117,6 @@ export const loadFeeCollectorEventsInChunks = async (
   toBlock: number
 ): Promise<ethers.Event[]> => {
   try {
-    console.log('loadFeeCollector', fromBlock, toBlock);
     const chunks: number[][] = []
     const blockRangeScan = toBlock - fromBlock
 
