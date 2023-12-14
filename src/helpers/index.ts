@@ -3,6 +3,8 @@ import { BlockTag } from '@ethersproject/abstract-provider'
 import { getRpcProviders } from './chain'
 import { FeeCollectorContract } from 'src/contracts/feeCollector'
 
+export const BLOCKS_RANGE_THRESHOLD = 1024 //https://docs.blockpi.io/guides-for-web-3.0-users/how-to-use-blockpi/best-practices
+const CHUNK_SIZE = 150
 interface ParsedFeeCollectedEvents {
   token: string // the address of the token that was collected
   integrator: string // the integrator that triggered the fee collection
@@ -70,11 +72,14 @@ export const loadFeeCollectorEvents = async (
     )
     return events
   } catch (err) {
-    console.log(err.code)
-    console.log(err.code)
+    if (err.code == 'SERVER_ERROR') {
+      throw Error(err.code)
+    }
+
     let retries = 0
 
     while (err.code === 'TIMEOUT' && retries < RETRY_THRESHOLD) {
+      console.log('retry attempt: ', retries)
       feeCollector.changeRpcProvider()
       feeCollectorContract = feeCollector.getFeeCollectorInstance()
       retries += 1
@@ -94,6 +99,51 @@ export const loadFeeCollectorEvents = async (
     }
 
     throw err
+  }
+}
+
+/**
+ * Returns a scan over a given blockrange. If the blockrange is below the _safe_ threshold, does a single call, otherwise, it
+ * executes a chunk strategy to make multiple calls without overloading the rpc
+ *
+ * @param feeCollector FeeCollectorContract
+ * @param fromBlock initial block to scan from
+ * @param toBlock end block to scan to
+ * @returns array of raw ethers.events[]
+ */
+export const loadFeeCollectorEventsInChunks = async (
+  feeCollector: FeeCollectorContract,
+  fromBlock: number,
+  toBlock: number
+): Promise<ethers.Event[]> => {
+  try {
+    console.log('loadFeeCollector', fromBlock, toBlock);
+    const chunks: number[][] = []
+    const blockRangeScan = toBlock - fromBlock
+
+    if (blockRangeScan < BLOCKS_RANGE_THRESHOLD) {
+      const singleChunk = await loadFeeCollectorEvents(
+        feeCollector,
+        fromBlock + 1,
+        toBlock
+      )
+      return singleChunk
+    }
+
+    for (let start = fromBlock + 1; start <= toBlock; start += CHUNK_SIZE) {
+      const end = Math.min(start + CHUNK_SIZE - 1, toBlock)
+      chunks.push([start, end])
+    }
+
+    const eventsPromises = chunks.map(([from, to]) =>
+      loadFeeCollectorEvents(feeCollector, from, to)
+    )
+    const rawChunksResults: ethers.Event[][] = await Promise.all(eventsPromises)
+    const flattenedChunkResults: ethers.Event[] = rawChunksResults.flat()
+    return flattenedChunkResults
+  } catch (error) {
+    console.error(`Error fetching blocks: ${error.message}`)
+    throw error
   }
 }
 
