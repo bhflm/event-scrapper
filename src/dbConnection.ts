@@ -10,6 +10,8 @@ const connectToDatabase = async (): Promise<void> => {
   console.log('STRING URI: ', `mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`)
 
   await mongoose.connect(`mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`, {
+    user: DB_USER,
+    pass: DB_PASS,
     authSource: 'admin',
   })
   console.log('Connected to db')

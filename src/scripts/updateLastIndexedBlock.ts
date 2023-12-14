@@ -11,7 +11,6 @@ import { DEFAULT_OLDEST_BLOCK } from './constants'
 const run = async () => {
   try {
     await connectToDatabase()
-    let block = null
 
     const argvChain = process.argv[2]
     let blockNumber = parseInt(process.argv[3], 10)
@@ -22,7 +21,7 @@ const run = async () => {
 
     const chainId = getChainIdByName(argvChain)
 
-    block = await saveLastIndexedBlock(DEFAULT_OLDEST_BLOCK, chainId)
+    await saveLastIndexedBlock(DEFAULT_OLDEST_BLOCK, chainId)
 
     console.log(
       `Updated last indexed block: ${blockNumber} for chain ${argvChain} (${chainId})`

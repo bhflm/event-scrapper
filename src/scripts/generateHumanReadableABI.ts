@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as fsPromises from 'fs/promises'
 import { ethers } from 'ethers'
 
