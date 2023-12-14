@@ -1,8 +1,8 @@
 import { ChainRpcProviders, ChainIds } from "../types/chains";
 
-export const getRpcProvider = (chainId: number) => {
+export const getRpcProviders = (chainId: number) => {
   if (!ChainRpcProviders[chainId]) {
-    throw new Error(`Unable to configure provider for chain ${chainId}.`)
+    throw new Error(`Unable to get provider for chain ${chainId}.`)
   }
   return ChainRpcProviders[chainId];
 };

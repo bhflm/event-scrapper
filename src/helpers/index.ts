@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { BlockTag } from '@ethersproject/abstract-provider'
-import { getRpcProvider } from './chain';
+import { getRpcProviders } from './chain';
 
 interface ParsedFeeCollectedEvents {
   token: string; // the address of the token that was collected
@@ -11,7 +11,7 @@ interface ParsedFeeCollectedEvents {
 
 export const getLastChainBlock = async (chainId: number) => {
   try {
-    const rpcUrl = getRpcProvider(chainId); 
+    const [rpcUrl] = getRpcProviders(chainId);
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
     const lastBlock = await provider.getBlockNumber();
     
