@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getRpcProvider, getChainIdByName } from './chain'
+import { getRpcProviders, getChainIdByName } from './chain'
 import { ChainRpcProviders } from '../types/chains'
 
 describe('getChainIdByName', () => {
@@ -26,15 +26,15 @@ describe('getRpcProvider', () => {
   const validChainId = 0
   it('Should throw with invalid chain', () => {
     try {
-      getRpcProvider(invalidChainId)
+      getRpcProviders(invalidChainId)
     } catch (err) {
       expect(err).toStrictEqual(
-        Error(`Unable to configure provider for chain ${invalidChainId}.`)
+        Error(`Unable to get provider for chain ${invalidChainId}.`)
       )
     }
   })
   it('Should retrieve valid chain Id', () => {
-    const rpcProvider = getRpcProvider(validChainId)
+    const rpcProvider = getRpcProviders(validChainId)
     expect(rpcProvider).toBe(ChainRpcProviders[0])
   })
 })

@@ -5,9 +5,9 @@
   "author": "germi <germanbonin@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon src/app.ts",
+    "start": "npm run build && node build/app.js",
     "dev": "nodemon src/app.ts",
-    "build": "rm -rf build/ && prettier --write source/ && tsc",
+    "build": "rm -rf build/ && tsc",
     "test": "vitest",
     "lint": "eslint --ext .tsx --ext .ts ./src",
     "lint:fix": "eslint --ext .tsx --ext .ts ./src --fix",
