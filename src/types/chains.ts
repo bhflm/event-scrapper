@@ -1,4 +1,4 @@
-// improve: this could be just a table
+// improve: this could be just an enum table
 export const ChainIds: Record<string, number> = {
   ETH: 0,
   POL: 1,

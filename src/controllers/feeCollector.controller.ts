@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ethers } from 'ethers';
 import { parseFeeCollectorEvents, loadFeeCollectorEvents, getLastChainBlock, parseToEventsModel } from '../helpers';
 import * as feeCollectorService from '../services/feeCollector.service';
-import { feeCollectorContract } from '../contracts/feeCollector';
+import { FeeCollectorContract } from '../contracts/feeCollector';
 import { getChainIdByName } from '../helpers/chain';
 
 const BLOCKS_RANGE_THRESHOLD = 1024;
@@ -39,7 +39,8 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
     }
 
     const chainId = getChainIdByName(chain);
-    const feeCollector = await feeCollectorContract(chainId);
+    const feeCollector = new FeeCollectorContract(chainId);
+    const feeCollectorContract = feeCollector.getFeeCollectorInstance();
 
     let toBlock;
 
@@ -62,13 +63,13 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
     const blockRangeScan = toBlock - fromBlock.lastIndexedBlock;
 
     if (blockRangeScan > BLOCKS_RANGE_THRESHOLD) {
-      rawEvents = await loadFeeCollectorEventsInChunks(feeCollector, fromBlock.lastIndexedBlock + 1, toBlock);
+      rawEvents = await loadFeeCollectorEventsInChunks(feeCollectorContract, fromBlock.lastIndexedBlock + 1, toBlock);
     } else {
-      rawEvents = await loadFeeCollectorEvents(feeCollector, fromBlock.lastIndexedBlock + 1, toBlock);
+      rawEvents = await loadFeeCollectorEvents(feeCollectorContract, fromBlock.lastIndexedBlock + 1, toBlock);
     }
     
     if (rawEvents.length > 0) {
-      const feeCollectorEvents = parseFeeCollectorEvents(feeCollector, rawEvents);
+      const feeCollectorEvents = parseFeeCollectorEvents(feeCollectorContract, rawEvents);
       const events = parseToEventsModel(feeCollectorEvents, chainId);
       await feeCollectorService.createManyEvents(events);
     };
