@@ -1,4 +1,3 @@
-import util from 'util';
 import { Event, EventModel } from '../models/events';
 import { LastIndexedBlock, LastIndexedBlockModel } from '../models/block';
 

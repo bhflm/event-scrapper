@@ -1,7 +1,6 @@
 import { vi, describe, expect, it } from 'vitest'
 import * as feeCollectorService from './feeCollector.service';
 
-
 vi.mock('@typegoose/typegoose', async (importOriginal) => {
   const mod = await importOriginal<typeof import('@typegoose/typegoose')>()
   return {
@@ -32,12 +31,24 @@ vi.mock('@typegoose/typegoose', async (importOriginal) => {
           chainId: 1,
         },
       ])),
+      find: vi.fn(() => ({
+        exec: vi.fn(() => ([
+          {
+            _id: 'foobar',
+            integrator: '0xB',
+            token: '0xA',
+            integratorFee: '700',
+            lifiFee: '70',
+            chainId: 1,
+          }
+        ]))
+      })),
     })),
   }
 })
 
 describe('getLastIndexedBlock', async () => {
-  it.only('Should return existing block', async () => {
+  it('Should return existing block', async () => {
     const chainId = 1;
     const expectedLastIndexedBlock = 42;
     const result = await feeCollectorService.getLastIndexedBlock(chainId);
@@ -46,7 +57,7 @@ describe('getLastIndexedBlock', async () => {
 })
 
 describe('saveLastIndexedBlock', async () => {
-  it.only('Should save expected block and return', async () => {
+  it('Should save expected block and return', async () => {
     const mockChainId = 1;
     const newLastIndexedBlock = 43;
     const result = await feeCollectorService.saveLastIndexedBlock(newLastIndexedBlock, mockChainId);
@@ -58,25 +69,23 @@ describe('saveLastIndexedBlock', async () => {
   });
 });
 
-
+const mockEventA = {
+  integrator: '0xB',
+  token: '0xA',
+  integratorFee: '700',
+  lifiFee: '70',
+  chainId: 1,
+};
+const mockEventB = {
+  integrator: '0xAA',
+  token: '0xAB',
+  integratorFee: '7000',
+  lifiFee: '700',
+  chainId: 1,
+};
 
 describe('createManyEvents', async () => {
   it('Should create more than 1 event and return', async () => {
-    const mockEventA = {
-      integrator: '0xB',
-      token: '0xA',
-      integratorFee: '700',
-      lifiFee: '70',
-      chainId: 1,
-    };
-    const mockEventB = {
-      integrator: '0xAA',
-      token: '0xAB',
-      integratorFee: '7000',
-      lifiFee: '700',
-      chainId: 1,
-    };
-    
     const result = await feeCollectorService.createManyEvents([ mockEventA, mockEventB ])
     
     mockEventA["_id"] = 'foobar';
@@ -86,4 +95,10 @@ describe('createManyEvents', async () => {
   });
 });
 
-// describe('getEventsByIntegrator', async() => {});
+describe('getEventsByIntegrator', async() => {
+  it('Should find events by single integrator', async () => {
+    const mockChainId = 1;
+    const result = await feeCollectorService.getEventsByIntegrator(mockEventA.integrator, mockChainId);
+    expect(result).toEqual([mockEventA]);
+  });
+});
