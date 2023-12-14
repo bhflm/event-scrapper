@@ -9,7 +9,7 @@ interface ParsedFeeCollectedEvents {
   lifiFee: ethers.BigNumberish; // the share collected for lifi
 }
 
-export const getLastBlockForFeeCollector = async (chainId: number) => {
+export const getLastChainBlock = async (chainId: number) => {
   try {
     const rpcUrl = getRpcProvider(chainId); 
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl);

@@ -1,14 +1,13 @@
 import { connectToDatabase } from "../dbConnection";
 import { getChainIdByName } from "../helpers/chain";
 import { saveLastIndexedBlock } from "../services/feeCollector.service";
-
-const DEFAULT_OLDEST_BLOCK = 47961368;
-
+import { DEFAULT_OLDEST_BLOCK } from './constants';
 // DEBUG script
 // !! WARN: Will upsert the db with last indexed block as the default value. 
 // This should be run on startup if last indexed block is 0.
 
-// Usage: npm run update-last-block {chainName} {blockNumber}?
+// Usage: npm run blocks:update-last-indexed {chainName} {blockNumber}?
+
 const run = async () => {
   try {
     await connectToDatabase();

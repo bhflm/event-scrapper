@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { ethers } from 'ethers';
-import { parseFeeCollectorEvents, loadFeeCollectorEvents, getLastBlockForFeeCollector, parseToEventsModel } from '../helpers';
+import { parseFeeCollectorEvents, loadFeeCollectorEvents, getLastChainBlock, parseToEventsModel } from '../helpers';
 import * as feeCollectorService from '../services/feeCollector.service';
 import { feeCollectorContract } from '../contracts/feeCollector';
 import { getChainIdByName } from '../helpers/chain';
@@ -28,7 +28,6 @@ const loadFeeCollectorEventsInChunks = async (feeCollector: ethers.Contract, fro
   }
 };
 
-
 export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
   try {
     const { body: { scanBlock, chain } } = req;
@@ -45,7 +44,7 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
     let toBlock;
 
     if (!scanBlock) {
-      toBlock = await getLastBlockForFeeCollector(chainId);
+      toBlock = await getLastChainBlock(chainId);
     } else {
       toBlock = scanBlock;
     }

@@ -1,3 +1,4 @@
+import util from 'util';
 import { Event, EventModel } from '../models/events';
 import { LastIndexedBlock, LastIndexedBlockModel } from '../models/block';
 
@@ -43,5 +44,4 @@ export const getEventsByIntegrator = async (integrator: string, chainId: number)
     console.error('Error by getEventsByIntegrator: ', error);
     throw error;
   }
- 
 }
