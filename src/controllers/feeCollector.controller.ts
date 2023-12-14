@@ -8,7 +8,7 @@ import { getChainIdByName } from '../helpers/chain';
 const BLOCKS_RANGE_THRESHOLD = 1024;
 const CHUNK_SIZE = 150; 
 
-const loadFeeCollectorEventsInChunks = async (feeCollector: ethers.Contract, fromBlock: number, toBlock: number): Promise<any> => {
+const loadFeeCollectorEventsInChunks = async (feeCollector: ethers.Contract, fromBlock: number, toBlock: number): Promise<ethers.Event[]> => {
   const chunks: number[][] = [];
 
   for (let start = fromBlock + 1; start <= toBlock; start += CHUNK_SIZE) {
@@ -16,11 +16,11 @@ const loadFeeCollectorEventsInChunks = async (feeCollector: ethers.Contract, fro
     chunks.push([start, end]);
   }
 
-  const promises = chunks.map(([start, end]) => loadFeeCollectorEvents(feeCollector, start, end));
+  const eventsPromises = chunks.map(([from, to]) => loadFeeCollectorEvents(feeCollector, from, to));
 
   try {
-    const rawChunksResults = await Promise.all(promises);
-    const flattenedChunkResults = rawChunksResults.flat();
+    const rawChunksResults: ethers.Event[][] = await Promise.all(eventsPromises);
+    const flattenedChunkResults: ethers.Event[] = rawChunksResults.flat();
     return flattenedChunkResults;
   } catch (error) {
     console.error(`Error fetching blocks: ${error.message}`);
@@ -34,16 +34,15 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
     const { body: { scanBlock, chain } } = req;
 
     if (!chain) {
-      const errorMessage = 'Need to suply a chain name';
-      console.error(errorMessage);
-      res.status(400).send({ errorMessage });
+      const missingChainParameterErrorMessage = 'Need to suply a chain name';
+      console.error(missingChainParameterErrorMessage);
+      res.status(400).send({ message: missingChainParameterErrorMessage });
     }
 
     const chainId = getChainIdByName(chain);
     const feeCollector = await feeCollectorContract(chainId);
 
     let toBlock;
-
 
     if (!scanBlock) {
       toBlock = await getLastBlockForFeeCollector(chainId);
@@ -61,7 +60,9 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
 
     let rawEvents;
 
-    if ((toBlock - fromBlock.lastIndexedBlock) > BLOCKS_RANGE_THRESHOLD) {
+    const blockRangeScan = toBlock - fromBlock.lastIndexedBlock;
+
+    if (blockRangeScan > BLOCKS_RANGE_THRESHOLD) {
       rawEvents = await loadFeeCollectorEventsInChunks(feeCollector, fromBlock.lastIndexedBlock + 1, toBlock);
     } else {
       rawEvents = await loadFeeCollectorEvents(feeCollector, fromBlock.lastIndexedBlock + 1, toBlock);
@@ -76,22 +77,20 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
     await feeCollectorService.saveLastIndexedBlock(toBlock, chainId);
 
     return res.send({ scanned: rawEvents.length });
-  } catch(err) {
-    console.error('fetchAndSaveLastEvents Error: ', err);
-    res.status(400).send({ err })
+  } catch(error) {
+    console.error('fetchAndSaveLastEvents Error: ', error);
+    res.status(400).send({ error })
   }
 };
 
-export const getEventsByIntegrator = async (req: Request, res: Response, next: NextFunction) => {
+export const getEventsByIntegrator = async (req: Request, res: Response) => {
   const { params: { address, chain } } = req;
   try {
-
-    console.log(address, chain);
-    
     const chainId = getChainIdByName(chain);
 
     if (!address) {
-      res.status(400).send({ message: 'Need to supply a integrator address '}); // FIX: status code
+      const missingAddressError = 'Need to supply a integrator address.';
+      res.status(400).send({ message: missingAddressError }); // FIX: status code
     }
   
     const rawEventsByIntegrator = await feeCollectorService.getEventsByIntegrator(address, chainId);
@@ -101,7 +100,7 @@ export const getEventsByIntegrator = async (req: Request, res: Response, next: N
     res.send({ events, amount: events.length });
   } catch(error) {
     console.error('Error getEventsByIntegrator: ', error.message);
-    res.status(400).send({ message: error.message });
+    res.status(400).send({ error });
   };
    
 };
