@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import eventsRouter from './feeCollector';
+import { Router } from 'express'
+import eventsRouter from './feeCollector'
 
-const router = Router();
+const router = Router()
 
-router.use(eventsRouter);
+router.use(eventsRouter)
 
-export default router;
+export default router

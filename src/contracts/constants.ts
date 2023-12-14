@@ -1,4 +1,3 @@
-
 export const CONTRACT_ADDRESS = '0xbD6C7B0d2f68c2b7805d88388319cfB6EcB50eA9'
 
 export const feeCollectorABI = [
@@ -31,5 +30,5 @@ export const feeCollectorABI = [
   'function pendingOwner() view returns (address)',
   'function transferOwnership(address _newOwner)',
   'function withdrawIntegratorFees(address tokenAddress)',
-  'function withdrawLifiFees(address tokenAddress)'
-];
+  'function withdrawLifiFees(address tokenAddress)',
+]

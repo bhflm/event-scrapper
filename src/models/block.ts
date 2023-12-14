@@ -1,11 +1,11 @@
-import { prop, getModelForClass } from "@typegoose/typegoose";
+import { prop, getModelForClass } from '@typegoose/typegoose'
 
-export class LastIndexedBlock {  
+export class LastIndexedBlock {
   @prop({ required: true, default: 0 })
-  lastIndexedBlock!: number;
-    
+  lastIndexedBlock!: number
+
   @prop({ required: true })
-  chainId!: number;
+  chainId!: number
 }
 
-export const LastIndexedBlockModel = getModelForClass(LastIndexedBlock);
+export const LastIndexedBlockModel = getModelForClass(LastIndexedBlock)

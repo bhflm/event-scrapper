@@ -1,5 +1,5 @@
 import { vi, describe, expect, it } from 'vitest'
-import * as feeCollectorService from './feeCollector.service';
+import * as feeCollectorService from './feeCollector.service'
 
 vi.mock('@typegoose/typegoose', async (importOriginal) => {
   const mod = await importOriginal<typeof import('@typegoose/typegoose')>()
@@ -13,7 +13,7 @@ vi.mock('@typegoose/typegoose', async (importOriginal) => {
         lastIndexedBlock: 43,
         chainId: 1,
       })),
-      insertMany: vi.fn(() => ([
+      insertMany: vi.fn(() => [
         {
           _id: 'foobar',
           integrator: '0xB',
@@ -30,9 +30,9 @@ vi.mock('@typegoose/typegoose', async (importOriginal) => {
           lifiFee: '700',
           chainId: 1,
         },
-      ])),
+      ]),
       find: vi.fn(() => ({
-        exec: vi.fn(() => ([
+        exec: vi.fn(() => [
           {
             _id: 'foobar',
             integrator: '0xB',
@@ -40,8 +40,8 @@ vi.mock('@typegoose/typegoose', async (importOriginal) => {
             integratorFee: '700',
             lifiFee: '70',
             chainId: 1,
-          }
-        ]))
+          },
+        ]),
       })),
     })),
   }
@@ -49,25 +49,31 @@ vi.mock('@typegoose/typegoose', async (importOriginal) => {
 
 describe('getLastIndexedBlock', async () => {
   it('Should return existing block', async () => {
-    const chainId = 1;
-    const expectedLastIndexedBlock = 42;
-    const result = await feeCollectorService.getLastIndexedBlock(chainId);
-    expect(result).toEqual({ lastIndexedBlock: expectedLastIndexedBlock, chainId });    
-  });
+    const chainId = 1
+    const expectedLastIndexedBlock = 42
+    const result = await feeCollectorService.getLastIndexedBlock(chainId)
+    expect(result).toEqual({
+      lastIndexedBlock: expectedLastIndexedBlock,
+      chainId,
+    })
+  })
 })
 
 describe('saveLastIndexedBlock', async () => {
   it('Should save expected block and return', async () => {
-    const mockChainId = 1;
-    const newLastIndexedBlock = 43;
-    const result = await feeCollectorService.saveLastIndexedBlock(newLastIndexedBlock, mockChainId);
-    expect(result).toEqual({ 
+    const mockChainId = 1
+    const newLastIndexedBlock = 43
+    const result = await feeCollectorService.saveLastIndexedBlock(
+      newLastIndexedBlock,
+      mockChainId
+    )
+    expect(result).toEqual({
       _id: 'foo',
       lastIndexedBlock: 43,
-      chainId: 1, 
-    });
-  });
-});
+      chainId: 1,
+    })
+  })
+})
 
 const mockEventA = {
   integrator: '0xB',
@@ -75,30 +81,36 @@ const mockEventA = {
   integratorFee: '700',
   lifiFee: '70',
   chainId: 1,
-};
+}
 const mockEventB = {
   integrator: '0xAA',
   token: '0xAB',
   integratorFee: '7000',
   lifiFee: '700',
   chainId: 1,
-};
+}
 
 describe('createManyEvents', async () => {
   it('Should create more than 1 event and return', async () => {
-    const result = await feeCollectorService.createManyEvents([ mockEventA, mockEventB ])
-    
-    mockEventA["_id"] = 'foobar';
-    mockEventB["_id"] = 'bar';
+    const result = await feeCollectorService.createManyEvents([
+      mockEventA,
+      mockEventB,
+    ])
 
-    expect(result).toEqual([mockEventA, mockEventB]);
-  });
-});
+    mockEventA['_id'] = 'foobar'
+    mockEventB['_id'] = 'bar'
 
-describe('getEventsByIntegrator', async() => {
+    expect(result).toEqual([mockEventA, mockEventB])
+  })
+})
+
+describe('getEventsByIntegrator', async () => {
   it('Should find events by single integrator', async () => {
-    const mockChainId = 1;
-    const result = await feeCollectorService.getEventsByIntegrator(mockEventA.integrator, mockChainId);
-    expect(result).toEqual([mockEventA]);
-  });
-});
+    const mockChainId = 1
+    const result = await feeCollectorService.getEventsByIntegrator(
+      mockEventA.integrator,
+      mockChainId
+    )
+    expect(result).toEqual([mockEventA])
+  })
+})
