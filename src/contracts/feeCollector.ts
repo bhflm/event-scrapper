@@ -37,11 +37,16 @@ export class FeeCollectorContract {
   }
 
 
+  /**
+   * Updates the current fee collector rpc provider url by increasing the index and fetching the next provider on the array.
+   * If the index is out of the array range, it resets to 0.
+   * @returns void
+   */
   private updateFeeCollectorProvider(): void {
     try {
       let nextProviderIndex = this.providerIndex + 1;
       console.log('NextPRovider: ', nextProviderIndex);
-      if (!this.rpcProviders[nextProviderIndex]) { // we did go through all the providers array;
+      if (!this.rpcProviders[nextProviderIndex]) {
         nextProviderIndex = 0;
         console.log('NextPRovider: ', nextProviderIndex);
       }
@@ -50,7 +55,7 @@ export class FeeCollectorContract {
       this.feeCollector = this.feeCollector.connect(newProvider);
       this.currentProvider = newRpcUrl;
       this.providerIndex = nextProviderIndex;
-      console.log('new provider')
+      console.log('new provider', this.currentProvider);
     } catch(err) {
       console.error('Error while updating provider');
       return err;

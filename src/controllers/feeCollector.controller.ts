@@ -5,11 +5,47 @@ import * as feeCollectorService from '../services/feeCollector.service';
 import { FeeCollectorContract } from '../contracts/feeCollector';
 import { getChainIdByName } from '../helpers/chain';
 
-const BLOCKS_RANGE_THRESHOLD = 1024;
-const CHUNK_SIZE = 150; 
+const BLOCKS_RANGE_THRESHOLD = 1024; //https://docs.blockpi.io/guides-for-web-3.0-users/how-to-use-blockpi/best-practices
+const CHUNK_SIZE = 150;
 
-const loadFeeCollectorEventsInChunks = async (feeCollector: ethers.Contract, fromBlock: number, toBlock: number): Promise<ethers.Event[]> => {
+const fetchRawEventsWithMultipleProviders = async (feeCollector: FeeCollectorContract, fromBlock: number, toBlock: number): Promise<ethers.Event[]> => {
+  const blockRangeScan = toBlock - fromBlock;
+  
+  let rawEvents;
+  try {
+    if (blockRangeScan > BLOCKS_RANGE_THRESHOLD) {
+      rawEvents = await loadFeeCollectorEventsInChunks(feeCollector, fromBlock + 1, toBlock);
+    } else {
+      rawEvents = await loadFeeCollectorEvents(feeCollector, fromBlock + 1, toBlock);
+    }
+  
+    return rawEvents;
+  } catch(err) {
+    console.log('fetchRawEvents', err);
+    throw Error(err);
+  }
+  
+};
+
+/**
+ * Returns a scan over a given blockrange. If the blockrange is below the _safe_ threshold, does a single call, otherwise, it 
+ * executes a chunk strategy to make multiple calls without overloading the rpc
+ * 
+ * @param feeCollector FeeCollectorContract
+ * @param fromBlock initial block to scan from 
+ * @param toBlock end block to scan to
+ * @returns array of raw ethers.events[]
+ */
+const loadFeeCollectorEventsInChunks = async (feeCollector: FeeCollectorContract, fromBlock: number, toBlock: number): Promise<ethers.Event[]> => {
+  console.log('LOAD FEE COLLECTOR EVENTS IN CHUNKS', fromBlock, toBlock);
+  try {
   const chunks: number[][] = [];
+  const blockRangeScan = toBlock - fromBlock;
+    
+  if (blockRangeScan < BLOCKS_RANGE_THRESHOLD) {
+    const singleChunk = await loadFeeCollectorEvents(feeCollector, fromBlock + 1, toBlock);
+    return singleChunk
+  };
 
   for (let start = fromBlock + 1; start <= toBlock; start += CHUNK_SIZE) {
     const end = Math.min(start + CHUNK_SIZE - 1, toBlock);
@@ -17,8 +53,6 @@ const loadFeeCollectorEventsInChunks = async (feeCollector: ethers.Contract, fro
   }
 
   const eventsPromises = chunks.map(([from, to]) => loadFeeCollectorEvents(feeCollector, from, to));
-
-  try {
     const rawChunksResults: ethers.Event[][] = await Promise.all(eventsPromises);
     const flattenedChunkResults: ethers.Event[] = rawChunksResults.flat();
     return flattenedChunkResults;
@@ -58,16 +92,8 @@ export const fetchAndSaveLastEvents = async (req: Request, res: Response) => {
       return res.status(400).send({ message: minorBlockRangeErrorMessage, lastIndexedBlock: fromBlock.lastIndexedBlock });
     }
 
-    let rawEvents;
+    let rawEvents = await fetchRawEventsWithMultipleProviders(feeCollector, fromBlock.lastIndexedBlock, toBlock);
 
-    const blockRangeScan = toBlock - fromBlock.lastIndexedBlock;
-
-    if (blockRangeScan > BLOCKS_RANGE_THRESHOLD) {
-      rawEvents = await loadFeeCollectorEventsInChunks(feeCollectorContract, fromBlock.lastIndexedBlock + 1, toBlock);
-    } else {
-      rawEvents = await loadFeeCollectorEvents(feeCollectorContract, fromBlock.lastIndexedBlock + 1, toBlock);
-    }
-    
     if (rawEvents.length > 0) {
       const feeCollectorEvents = parseFeeCollectorEvents(feeCollectorContract, rawEvents);
       const events = parseToEventsModel(feeCollectorEvents, chainId);

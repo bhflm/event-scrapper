@@ -9,6 +9,10 @@
     "dev": "nodemon src/app.ts",
     "build": "rm -rf build/ && prettier --write source/ && tsc",
     "test": "vitest",
+    "lint": "eslint --ext .tsx --ext .ts ./src",
+    "lint:fix": "eslint --ext .tsx --ext .ts ./src --fix",
+    "types:check": "tsc --noEmit",
+    "prettier:fix": "prettier --write ./src/.",
     "blocks:update-last-indexed": "npx ts-node src/scripts/updateLastIndexedBlock.ts",
     "blocks:listen-new-blocks": "npx ts-node src/scripts/listenForNewBlocks.ts"
   },
