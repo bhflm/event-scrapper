@@ -5,7 +5,7 @@
   "author": "germi <germanbonin@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "npm run build && node build/app.js",
+    "start": "npm run build && node dist/src/app.js",
     "dev": "nodemon src/app.ts",
     "build": "rm -rf build/ && tsc",
     "test": "vitest",

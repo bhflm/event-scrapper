@@ -1,47 +1,107 @@
 ## LiFi Assignment: Working with Events
 
-tldr; description
-
-- [] Tests (controllers, services )
-- [] Types (remove any)
-- [] Remove comments 
-- [] Better readme
-- [] CLI Capabilities ? 
+Following is the proposed solution for the LiFi assignment.
 
 # Pre requisites
+
+Before running the application there're a couple of things we need to have pre installed: 
 
 - Docker 
 - Node 18 
 - Npm 
 
-- build docker image 
-- build compose 
-- docker compose up
-WIP
+Also, we need to have a proper `.env` file. Renaming the `.env.sample` to => `.env` is enough.
+Please make sure that the `DB_HOST` matches the `mongodb` docker compose service name, otherwise it won't be able to connect to the app.
 
-* `docker build -t lifi .`
+* For not running on docker, supplying `127.0.0.1` as the host value will do the trick. (needs mongodb installed locally)
 
 # How to run 
 
-WIP 
-- npm run dev (nodemon)
-- npm run start (prod) ? 
+With everything from the above installed, make sure to run the following commands in the stated order. This will ensure a proper env setup for development. 
+- `docker compose up --build`
+Will get in charge of pulling the mongodb img, building the lifi-express service, and running both. 
 
-- npm run update-last block: manually upsert block if needed (debug stuff)
+If everything goes ok, we should see something like this 
+![mongo-services](./assets/mongo-services-running.jpg)
+
+After docker compose up --build, some setup is needed. Due to the database being empty, we need to update at least initially one block index.
+To do this, we need to run a prior script to fill the `lastIndexedBlock` value. Otherwise it will fail. 
+
+On another terminal, run: 
+
+- `docker exec -it lifi-express sh`
+
+![docker-exec](./assets/docker-exec-lifi.jpeg)
+
+This will get us inside the lifi-express service docker, from here, we need to run the following script :
+
+- `npm run blocks:update-last-indexed POL`  
+
+* POL is the value of the Polygon chain we're using for the example. 
+
+<img src="./assets/lifi-express-container.jpg">
+
+This will set the default oldest block provided by the assignment as 
+the lastIndexed block. 
+
+We're all set now, we can interact with both exposed endpoints and test the app. 
+
+Since the assignment doesn't explicitly mentions what kind of tool to build, I've decided to go with a server and expose the following endpoints:
+
+- POST `/events`
+For scrapping new events. Accepts optional `scanBlock` as parameter to set an upper block range scan. Otherwise it will fetch the last block from chain. 
+
+Due to time constrains I couldn't complete a proper controller test suite but I've managed to test some block ranges (10, 10k, 100k blocks to scan):
+
+10k blocks: 
+
+<img src="./assets/10k.jpg" width="600" height="350">
+<!-- ![10k](./assets/10k.jpg) -->
+
+100k blocks:
+
+<img src="./assets/100k.jpg" width="600" height="400">
+
+- GET `events/:chain/:integratorAddress`
+
+For getting events by chain, from any integrator address. 
+
+<img src="./assets/get-events.jpg" width="600" height="400">
+
+# Custom Scripts 
+
+Along the project I've had the necessity of running this custom tooling to facilitate some tasks. 
+
+-`npm run blocks:update-last-indexed`
+
+Manually sets the last block indexed on the database.
+
+-`npm run blocks:listen-new-blocks`
+
+Manually listens to new blocks given the block range. This could suit as a proper cli if refactored and expanded. Or more meant for a manual tool rather than the server functionality for indexing new blocks.
+
+-`generateHumanReadableABI.ts`
+
+Outputs the human readable abi from a .json abi. Doing File I/O everytime for loading the abi and parsing it wasn't the best practice, and since the contract was _small_ I've decided to keep it as a string constant. 
 
 # Considerations 
 
-WIP 
+There were many considerable challenges along the road which I've found to be quite fun!, some of them: 
 
-- Using ethers.js vs Moralis or another provider for event listening, pros/cons
+- Exceed block range request - strategies to fetch big amount of block range:
 
-- Exceed block range request - strategies to fetch big amount of block range, 
- * exponential backoff request emthod
- * multiple providers 
- * combination of above
+ * chunks request for not exceeding maximum block range
+ * multiple rpc url providers switching
+ * doing a combination of above for getting a more efficient wider block range scrapping
 
-- time constrains for doing correct tests and typegoose mocking things :melting-face:
+On the other hand, I wasn't the best at time management for tasks and some things were beyond my scope, which led to some decisions in not implementing some things that could be totally improved. Some of them:
 
-# Final thoughts 
+- Doing a stronger and more robust testing on the controller and service side.
 
-WIP
+- Some minor refactors, like the errors, onto a module for unified errors messages.
+
+- Implement logging for better error tracing.
+
+- Instead of having to run a script to fill an initial database value (not the best solution imho), there're better alternatives like running a seed after database initialization. But I sticked to this script from the very beggining for testing purposes and since I had to cut some corners by the very end, I've decided to stick to this method.
+
+Overall, I feel it was a really interesting challenge to implement.
