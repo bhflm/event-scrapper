@@ -1,6 +1,17 @@
 ## LiFi Assignment: Working with Events
 
-Following is the proposed solution for the LiFi assignment.
+# Background
+
+We have a Smart Contract which is responsible for collecting fees for our transactions when certain conditions are met. This contract is called the `FeeCollector` and is deployed to all EVM chains that we support. [You can see if for example on Polygon](https://polygonscan.com/address/0xbD6C7B0d2f68c2b7805d88388319cfB6EcB50eA9).
+
+Every time a transaction is submitted that includes fee collection, an event is emitted on this contract. You can see those events [here](https://polygonscan.com/address/0xbD6C7B0d2f68c2b7805d88388319cfB6EcB50eA9#events).
+
+<aside>
+💡 Transactions are grouped in EVM Chains in so called blocks. Every block has a unique tag. Emitted events on a smart contract can be queried for a range of blocks.
+
+</aside>
+
+We would like to have the functionality to scan those emitted events, store them in our database and request them based on the integrator that the fees were collected for.
 
 # Pre requisites
 
